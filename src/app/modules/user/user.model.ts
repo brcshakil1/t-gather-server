@@ -1,5 +1,12 @@
 import { model, Schema } from "mongoose";
-import { IUser, IUserFollowers, IUserFollowings } from "./user.interface";
+import {
+  IUser,
+  IUserFollowers,
+  IUserFollowings,
+  IUserModel,
+} from "./user.interface";
+import bcrypt from "bcrypt";
+import config from "../../config";
 
 // Mongoose Schema for IUserFollowers
 const UserFollowersSchema = new Schema<IUserFollowers>({
@@ -12,21 +19,40 @@ const UserFollowingsSchema = new Schema<IUserFollowings>({
 });
 
 // Mongoose Schema for IUser
-const UserSchema = new Schema<IUser>(
+const UserSchema = new Schema<IUser, IUserModel>(
   {
     username: { type: String, required: true, unique: true },
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     phone: { type: String, required: true },
-    role: { type: String, enum: ["ADMIN", "USER"], required: true },
+    role: { type: String, enum: ["admin", "user"], required: true },
     image: { type: String },
     dateOfBirth: { type: String, required: true },
     address: { type: String },
     followers: { type: [UserFollowersSchema], default: [] },
     followings: { type: [UserFollowingsSchema], default: [] },
+    isDeleted: { type: Boolean, default: false },
   },
-  { timestamps: true }
+  { timestamps: true, versionKey: false }
 );
 
-export const User = model<IUser>("User", UserSchema);
+// plain password to hash password
+
+UserSchema.pre("save", async function (next) {
+  const user = this;
+  console.log(user, "pre user");
+  this.password = await bcrypt.hash(this.password, Number(config.salt_rounds));
+  next();
+});
+
+// this is for match is plain password match with hash password
+
+UserSchema.statics.isPasswordMatch = async function (
+  plainPassword,
+  hashPassword
+) {
+  return await bcrypt.compare(plainPassword, hashPassword);
+};
+
+export const User = model<IUser, IUserModel>("User", UserSchema);

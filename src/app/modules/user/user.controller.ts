@@ -22,6 +22,7 @@ const createSingleUser = async (req: Request, res: Response) => {
     });
   }
 };
+
 const getUsers = async (req: Request, res: Response) => {
   try {
     const result = await UserServices.getUsersFromDB();
@@ -43,7 +44,37 @@ const getUsers = async (req: Request, res: Response) => {
   }
 };
 
+const addFollower = async (req: Request, res: Response) => {
+  try {
+    const { targetedUserId } = req.params;
+
+    const { userId } = req.body;
+
+    const result = await UserServices.addFollowerIntoUserDB(
+      userId,
+      targetedUserId
+    );
+
+    res.status(200).json({
+      success: true,
+      statusCode: 200,
+      message: "You are successfully following!",
+      data: result,
+    });
+  } catch (err: any) {
+    // Check if it's a custom error with a message, otherwise use a generic error
+    const errorMessage = err.message || "An unexpected error occurred.";
+
+    res.status(400).json({
+      success: false,
+      statusCode: 400,
+      message: errorMessage,
+    });
+  }
+};
+
 export const UserControllers = {
   createSingleUser,
   getUsers,
+  addFollower,
 };

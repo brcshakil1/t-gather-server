@@ -1,3 +1,4 @@
+import { ObjectId } from "mongoose";
 import { IUser } from "./user.interface";
 import { User } from "./user.model";
 
@@ -28,9 +29,70 @@ const getUsersFromDB = async () => {
   return result;
 };
 
-const userFollowersUpdatesIntoDB = async (payload) => {};
+const addFollowerIntoUserDB = async (
+  userId: string,
+  targetedUserId: string
+) => {
+  // check if user already following the targeted user
+  const isUserFollowingTheTargetedUser = await User.findOne({
+    _id: userId,
+    "followings.user": targetedUserId,
+  });
+
+  if (isUserFollowingTheTargetedUser) {
+    throw new Error("You'r already following the user.");
+  }
+
+  console.log({ userId }, { targetedUserId });
+
+  // add targeted the current user's follower
+  const user = await User.findByIdAndUpdate(
+    userId,
+    {
+      $addToSet: { followings: targetedUserId },
+    },
+    { new: true }
+  );
+
+  const targetedUser = await User.findByIdAndUpdate(
+    targetedUserId,
+    {
+      $addToSet: {
+        followers: userId,
+      },
+    },
+    { new: true }
+  );
+
+  return { user, targetedUser };
+};
+
+const removeFollowerIntoUserDB = async (
+  userId: string,
+  followerId: ObjectId
+) => {
+  const isUserAlreadyFollowed = await User.findOne({
+    _id: userId,
+    "followers.user": followerId,
+  });
+
+  // if user already followed the unfollowed
+  if (isUserAlreadyFollowed) {
+    const updatedUserFollowers = await User.findByIdAndUpdate(
+      userId,
+      {
+        $pull: { followers: { user: followerId } },
+      },
+      { new: true, useFindAndModify: false }
+    );
+
+    return;
+  }
+};
 
 export const UserServices = {
   createSingleUserIntoDB,
   getUsersFromDB,
+  addFollowerIntoUserDB,
+  removeFollowerIntoUserDB,
 };

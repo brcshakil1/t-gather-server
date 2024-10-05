@@ -1,4 +1,4 @@
-import { ObjectId } from "mongoose";
+import { Model, ObjectId } from "mongoose";
 
 interface IUserName {
   firstName: string;
@@ -25,10 +25,18 @@ export interface IUser {
   email: string;
   password: string;
   phone: string;
-  role: "ADMIN" | "USER";
+  role: "admin" | "user";
   image: string;
   dateOfBirth: string;
   address?: string;
   followers: IUserFollowers[];
   followings: IUserFollowings[];
+  isDeleted: boolean;
+}
+
+export interface IUserModel extends Model<IUser> {
+  isPasswordMatch(
+    plainPassword: string,
+    hashPassword: string
+  ): Promise<boolean>;
 }
