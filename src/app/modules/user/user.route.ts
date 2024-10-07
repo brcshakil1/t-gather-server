@@ -1,10 +1,16 @@
 import { Router } from "express";
 import { UserControllers } from "./user.controller";
+import auth from "./../../middlewares/auth";
 
 const router = Router();
 
 router.post("/auth/signup", UserControllers.createSingleUser);
-router.get("/auth/users", UserControllers.getUsers);
-router.put("/:targetedUserId", UserControllers.addFollower);
+router.get("/auth/users", auth(), UserControllers.getUsers);
+router.put("/:targetedUserId", auth(), UserControllers.addFollower);
+router.patch(
+  "/:userId/password/change",
+  auth(),
+  UserControllers.changingPassword
+);
 
 export const UserRouters = router;

@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { UserServices } from "./user.service";
+import catchAsync from "../../utils/catchAsync";
 
 const createSingleUser = async (req: Request, res: Response) => {
   try {
@@ -73,8 +74,22 @@ const addFollower = async (req: Request, res: Response) => {
   }
 };
 
+const changingPassword = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const changingPassword = req.body;
+  const result = await UserServices.changePassword(userId, changingPassword);
+
+  res.status(200).json({
+    success: true,
+    statusCode: 200,
+    message: "Password changed!",
+    data: result,
+  });
+});
+
 export const UserControllers = {
   createSingleUser,
   getUsers,
   addFollower,
+  changingPassword,
 };

@@ -2,6 +2,12 @@ import { ObjectId } from "mongoose";
 import { IUser } from "./user.interface";
 import { User } from "./user.model";
 
+interface IChangingPassword {
+  currentPassword: string;
+  newPassword: string;
+  retypeNewPassword: string;
+}
+
 const createSingleUserIntoDB = async (payload: IUser) => {
   // check if the email is already exist
   const email = payload?.email;
@@ -90,9 +96,59 @@ const removeFollowerIntoUserDB = async (
   }
 };
 
+const changePassword = async (
+  userId: string,
+  changingPassword: IChangingPassword
+) => {
+  // checking if the user exists
+  const isUserExist = await User.isUserExistById(userId);
+
+  if (!isUserExist) {
+    throw new Error("Unauthorized user");
+  }
+
+  const currentPassword = changingPassword.currentPassword;
+  const newPassword = changingPassword.newPassword;
+  const retypeNewPassword = changingPassword.retypeNewPassword;
+
+  // check if the password match
+  const isCurrentPasswordMatch = await User.isPasswordMatch(
+    currentPassword,
+    isUserExist?.password
+  );
+
+  if (!isCurrentPasswordMatch) {
+    throw new Error(
+      "Current password does not match. Please enter the correct password."
+    );
+  }
+
+  if (newPassword === "" || retypeNewPassword === "") {
+    throw new Error("Enter password");
+  }
+
+  // checking if the new password and retype newPassword matched
+  if (newPassword !== retypeNewPassword) {
+    throw new Error(
+      "Please enter correct new password in the both new password and retype new password field. "
+    );
+  }
+
+  const hashPassword = await User.hashPassword(newPassword);
+  console.log({ hashPassword });
+
+  // update new password
+  const result = await User.findByIdAndUpdate(userId, {
+    password: hashPassword,
+  });
+
+  return result;
+};
+
 export const UserServices = {
   createSingleUserIntoDB,
   getUsersFromDB,
   addFollowerIntoUserDB,
   removeFollowerIntoUserDB,
+  changePassword,
 };

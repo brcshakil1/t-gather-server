@@ -5,11 +5,14 @@ import { createToken, verifyToken } from "./auth.utils";
 
 const loginUser = async (payload: ILoginUser) => {
   // check if user is exist
-  const user = await User.findOne({ email: payload?.email });
+  const user = await User.findOne({
+    email: payload?.email,
+  });
+
   if (!user) {
     throw new Error(`Your email or password is not match. Please try again.`);
   } else {
-    const isPasswordMatch = User.isPasswordMatch(
+    const isPasswordMatch = await User.isPasswordMatch(
       payload?.password as string,
       user?.password
     );
@@ -21,7 +24,7 @@ const loginUser = async (payload: ILoginUser) => {
     const jwtPayload = {
       _id: user?._id,
       email: user?.email,
-      role: user?.role,
+      role: user?.role || "USER",
     };
 
     const accessToken = createToken(

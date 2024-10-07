@@ -32,6 +32,7 @@ const UserSchema = new Schema<IUser, IUserModel>(
     address: { type: String },
     followers: { type: [UserFollowersSchema], default: [] },
     followings: { type: [UserFollowingsSchema], default: [] },
+    isPremium: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
   },
   { timestamps: true, versionKey: false }
@@ -45,6 +46,16 @@ UserSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, Number(config.salt_rounds));
   next();
 });
+
+// check if the user exist by id
+UserSchema.statics.isUserExistById = async function (userId) {
+  return await User.findById(userId).select("password");
+};
+
+// hash password
+UserSchema.statics.hashPassword = async function (plainPassword) {
+  return await bcrypt.hash(plainPassword, Number(config.salt_rounds));
+};
 
 // this is for match is plain password match with hash password
 

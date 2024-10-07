@@ -31,10 +31,13 @@ export interface IUser {
   address?: string;
   followers: IUserFollowers[];
   followings: IUserFollowings[];
+  isPremium: boolean;
   isDeleted: boolean;
 }
 
 export interface IUserModel extends Model<IUser> {
+  hashPassword(plainPassword: string): Promise<string>;
+  isUserExistById(id: string): Promise<IUser>;
   isPasswordMatch(
     plainPassword: string,
     hashPassword: string
