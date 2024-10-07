@@ -12,5 +12,6 @@ router.patch(
   auth(),
   UserControllers.changingPassword
 );
+router.patch("/:userId", auth(), UserControllers.updateUserInformation);
 
 export const UserRouters = router;

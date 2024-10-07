@@ -35,6 +35,26 @@ const getUsersFromDB = async () => {
   return result;
 };
 
+// update user information
+const updateUserInformationIntoDB = async (
+  userId: string,
+  payload: Partial<IUser>
+) => {
+  // check if the user exist
+  const user = await User.isUserExistById(userId);
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  const result = await User.findByIdAndUpdate(
+    userId,
+    { ...payload },
+    { new: true }
+  );
+
+  return result;
+};
+
 const addFollowerIntoUserDB = async (
   userId: string,
   targetedUserId: string
@@ -135,7 +155,6 @@ const changePassword = async (
   }
 
   const hashPassword = await User.hashPassword(newPassword);
-  console.log({ hashPassword });
 
   // update new password
   const result = await User.findByIdAndUpdate(userId, {
@@ -151,4 +170,5 @@ export const UserServices = {
   addFollowerIntoUserDB,
   removeFollowerIntoUserDB,
   changePassword,
+  updateUserInformationIntoDB,
 };

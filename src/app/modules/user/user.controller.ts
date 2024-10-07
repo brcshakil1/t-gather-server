@@ -87,9 +87,25 @@ const changingPassword = catchAsync(async (req, res) => {
   });
 });
 
+const updateUserInformation = catchAsync(async (req, res) => {
+  const { userId } = req.params;
+  const result = await UserServices.updateUserInformationIntoDB(
+    userId,
+    req.body
+  );
+
+  res.status(200).json({
+    success: true,
+    statusCode: 200,
+    message: "User info updated!",
+    data: result,
+  });
+});
+
 export const UserControllers = {
   createSingleUser,
   getUsers,
   addFollower,
   changingPassword,
+  updateUserInformation,
 };
